@@ -1,0 +1,36 @@
+# ─── API Framework ────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# ─── Machine Learning ─────────────────────────────────────────────────────────
+scikit-learn==1.4.2
+numpy==1.26.4
+scipy==1.13.0
+joblib==1.4.2
+
+# ─── Deep Learning (optionnel — LSTM) ────────────────────────────────────────
+# torch==2.3.0          # décommenter si GPU disponible
+# torchvision==0.18.0
+
+# ─── Online Learning / Drift Detection ───────────────────────────────────────
+river==0.21.0
+
+# ─── Optimisation ─────────────────────────────────────────────────────────────
+optuna==3.6.1
+
+# ─── Data Processing ──────────────────────────────────────────────────────────
+pandas==2.2.2
+
+# ─── MLOps (optionnel) ────────────────────────────────────────────────────────
+# mlflow==2.12.2        # décommenter pour tracking expériences
+
+# ─── Base de données time-series (optionnel) ─────────────────────────────────
+# influxdb-client==1.43.0   # décommenter si InfluxDB utilisé
+
+# ─── Tests ────────────────────────────────────────────────────────────────────
+pytest==8.2.0
+pytest-asyncio==0.23.6
+httpx==0.27.0
