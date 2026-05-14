@@ -1,26 +1,31 @@
-"""
-Moteur d'Optimisation des Paramètres TSP
-Algorithme : Optimisation Bayésienne (Optuna TPE Sampler)
-"""
+class TSPOptimizer:
+    """Optimiseur Bayésien des paramètres procédé TSP via Optuna"""
 
-import numpy as np
-import optuna
-import time
-from typing import Optional
-from datetime import datetime
+    def __init__(self):
+        self.study = None
+        self.best_params = None
 
-optuna.logging.set_verbosity(optuna.logging.WARNING)
+    def optimize(self, request, predictor=None, n_trials: int = 50):
+        search_space = get_optuna_search_space()
 
-from app.schemas.tsp import (
-    SensorReading, OptimizationTarget,
-    OptimizedParameters, OptimizationRequest
-)
-from app.ml.predictor import get_predictor
-from app.core.config import settings
+        def objective(trial):
+            params = {}
+            for name, bounds in search_space.items():
+                params[name] = trial.suggest_float(name, bounds["min"], bounds["max"])
 
-# ── NOUVEAU : import contraintes process TSP ──────────────────────────────────
-from app.core.process_knowledge import (
-    get_optuna_search_space,
-    validate_optuna_params,
-    evaluate_product_quality,
-)
+            validation = validate_optuna_params(params)
+            if not validation.get("is_valid", True):
+                return float("inf")
+
+            quality = evaluate_product_quality(params)
+            p2o5 = quality.get("p2o5_score", 0)
+            return -p2o5
+
+        self.study = optuna.create_study(direction="minimize")
+        self.study.optimize(objective, n_trials=n_trials)
+        self.best_params = self.study.best_params
+        return self.best_params
+
+
+def get_optimizer() -> TSPOptimizer:
+    return TSPOptimizer()
