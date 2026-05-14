@@ -1,117 +1,226 @@
-# OCP TSP Intelligence Platform — Backend
+# 🏭 OCP TSP Intelligence Platform — Guide de Déploiement
 
-> Plateforme Intelligente Temps Réel pour la Prédiction, la Détection de Dérive  
-> et l'Optimisation des Paramètres Qualité du Procédé TSP — OCP Khouribga
+**Projet PFE 2026 — Plateforme IA Industrielle TSP**  
+Site : OCP Khouribga | Stack : FastAPI + React + ML (GBM + ADWIN + Optuna)
 
 ---
 
-## Architecture
+## 📋 Prérequis
 
-```
-tsp_backend/
-├── app/
-│   ├── main.py              # Point d'entrée FastAPI
-│   ├── core/
-│   │   └── config.py        # Configuration & seuils qualité
-│   ├── api/
-│   │   ├── predictions.py   # Endpoints prédiction ML
-│   │   ├── drift.py         # Endpoints détection dérive
-│   │   ├── optimization.py  # Endpoints optimisation Optuna
-│   │   ├── monitoring.py    # Endpoints monitoring modèles
-│   │   └── data.py          # Endpoints données capteurs
-│   ├── ml/
-│   │   ├── predictor.py     # Modèle GBM multi-output (P2O5, SO4, F, Mg)
-│   │   ├── drift_detector.py# ADWIN + KS Test
-│   │   └── optimizer.py     # Optimisation Bayésienne (Optuna TPE)
-│   └── schemas/
-│       └── tsp.py           # Modèles Pydantic (validation données)
-├── tests/
-│   └── test_tsp.py          # Tests unitaires pytest
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
-```
+| Outil | Version minimale | Vérification |
+|-------|-----------------|--------------|
+| Python | 3.10+ | `python --version` |
+| Node.js | 18+ | `node --version` |
+| Git | 2.x | `git --version` |
+| Docker (optionnel) | 24+ | `docker --version` |
 
-## Endpoints API
+---
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| GET  | `/health` | Santé de l'API |
-| POST | `/api/v1/predictions/predict` | Prédiction temps réel (P2O5, SO4, F, Mg) |
-| POST | `/api/v1/predictions/predict/batch` | Prédiction batch |
-| GET  | `/api/v1/predictions/simulate` | Simulation avec valeurs types |
-| POST | `/api/v1/drift/analyze` | Analyse dérive sur fenêtre |
-| POST | `/api/v1/drift/update` | Mise à jour ADWIN temps réel |
-| GET  | `/api/v1/drift/simulate` | Simulation dérive |
-| POST | `/api/v1/optimization/optimize` | Optimisation paramètres (Optuna) |
-| GET  | `/api/v1/optimization/quick` | Optimisation rapide |
-| GET  | `/api/v1/monitoring/models` | Santé modèles production |
-| GET  | `/api/v1/data/live` | Données capteurs live |
-| GET  | `/api/v1/data/history` | Historique 24h |
+## 🚀 Démarrage rapide (sans Docker)
 
-## Installation & Lancement
-
-### Option 1 — Python direct
+### 1. Cloner les deux repos
 
 ```bash
-# 1. Créer environnement virtuel
-python -m venv venv
-venv\Scripts\activate        # Windows
-# source venv/bin/activate   # Linux/Mac
+# Backend
+git clone https://github.com/mariaerrih2-bot/ocp-tsp-intelligence-platform-2026
+cd ocp-tsp-intelligence-platform-2026
 
-# 2. Installer dépendances
+# Frontend (dans un autre terminal)
+git clone https://github.com/mariaerrih2-bot/ocp-monitron-spark
+cd ocp-monitron-spark
+```
+
+### 2. Lancer le Backend
+
+```bash
+cd ocp-tsp-intelligence-platform-2026
+
+# Installer les dépendances
 pip install -r requirements.txt
 
-# 3. Lancer le serveur
-uvicorn app.main:app --reload --port 8000
+# Lancer le serveur
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
-### Option 2 — Docker
+✅ API disponible sur : `http://localhost:8000`  
+✅ Documentation Swagger : `http://localhost:8000/docs`
+
+### 3. Lancer le Frontend
 
 ```bash
+cd ocp-monitron-spark
+
+# Installer les dépendances
+npm install
+
+# Lancer l'interface
+npm run dev
+```
+
+✅ Interface disponible sur : `http://localhost:8080`
+
+---
+
+## 🐳 Démarrage avec Docker (recommandé)
+
+```bash
+cd ocp-tsp-intelligence-platform-2026
 docker-compose up --build
 ```
 
-### Accéder à l'API
+✅ Backend : `http://localhost:8000`  
+✅ Frontend : `http://localhost:8080`
 
-- Documentation interactive : http://localhost:8000/docs
-- Schéma OpenAPI : http://localhost:8000/openapi.json
-- Health check : http://localhost:8000/health
+---
 
-## Lancer les Tests
+## 🏗️ Architecture du projet
 
-```bash
-pip install pytest
-pytest tests/ -v
 ```
-
-## Technologies
-
-| Composant | Technologie |
-|-----------|-------------|
-| API Framework | FastAPI + Uvicorn |
-| ML Prédiction | Scikit-learn (GradientBoosting MultiOutput) |
-| Détection Dérive | ADWIN (maison) + SciPy KS Test |
-| Optimisation | Optuna (TPE Sampler bayésien) |
-| Validation données | Pydantic v2 |
-| Tests | Pytest |
-| Déploiement | Docker + docker-compose |
-
-## Connexion au Frontend (React/Lovable)
-
-Dans le frontend React, remplacer l'URL de base :
-
-```javascript
-const API_BASE = "http://localhost:8000/api/v1";
-
-// Exemple appel prédiction
-const response = await fetch(`${API_BASE}/predictions/predict`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ sensor_data: readings, explain: true })
-});
+┌─────────────────────────────────────────────────────┐
+│                   FRONTEND (React)                   │
+│              http://localhost:8080                   │
+│  Dashboard | Analyse | Alertes | Recommandations    │
+└─────────────────────┬───────────────────────────────┘
+                      │ HTTP REST
+┌─────────────────────▼───────────────────────────────┐
+│                  BACKEND (FastAPI)                   │
+│              http://localhost:8000                   │
+│                                                      │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │  predictor  │  │  optimizer   │  │   drift    │ │
+│  │  GBM multi  │  │  Optuna TPE  │  │ ADWIN + KS │ │
+│  │  P2O5/SO4   │  │  Bayésien    │  │  détection │ │
+│  └──────┬──────┘  └──────┬───────┘  └─────┬──────┘ │
+│         └────────────────┼────────────────┘         │
+│                          │                           │
+│  ┌───────────────────────▼──────────────────────┐   │
+│  │         process_knowledge.py                  │   │
+│  │   Logique métier TSP OCP Khouribga            │   │
+│  │   Variables process | Seuils qualité          │   │
+│  │   Contraintes Optuna | SHAP vulgarisé         │   │
+│  └──────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘
 ```
 
 ---
 
-**PFE — Ingénierie des Systèmes Intelligents | OCP Khouribga | 2026**
+## 📡 Endpoints API principaux
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/v1/predictions/predict` | Prédiction qualité P2O5/SO4 |
+| POST | `/api/v1/optimization/optimize` | Optimisation paramètres Optuna |
+| POST | `/api/v1/drift/analyze` | Détection dérive ADWIN+KS |
+| GET | `/api/v1/monitoring/models` | Santé des modèles ML |
+| GET | `/api/v1/data/live` | Données capteurs temps réel |
+
+---
+
+## 🧪 Test rapide de l'API
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/predictions/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sensor_data": {
+      "temperature_reaction": 90.0,
+      "pression_filtre": 3.5,
+      "debit_acide": 16.0,
+      "debit_phosphate": 30.0,
+      "temperature_sechage": 450.0,
+      "humidite_entree": 4.0,
+      "granulometrie_d50": 3.5,
+      "ratio_ss": 0.95
+    },
+    "explain": true
+  }'
+```
+
+**Réponse attendue :**
+```json
+{
+  "p2o5_predicted": 46.2,
+  "so4_predicted": 1.48,
+  "overall_status": "normal",
+  "quality_evaluation": {
+    "conformant": true,
+    "quality_score": 100.0,
+    "summary": "✅ Produit conforme TSP Standard OCP"
+  },
+  "operator_messages": [],
+  "operator_explanations": [...]
+}
+```
+
+---
+
+## 📁 Structure des fichiers clés
+
+```
+ocp-tsp-intelligence-platform-2026/
+├── app/
+│   ├── core/
+│   │   ├── config.py              # Seuils qualité TSP OCP réels
+│   │   └── process_knowledge.py   # ⭐ Logique métier process TSP
+│   ├── ml/
+│   │   ├── predictor.py           # Modèle GBM multi-output
+│   │   ├── optimizer.py           # Optimisation Optuna TPE
+│   │   └── drift_detector.py      # Détection dérive ADWIN+KS
+│   ├── schemas/
+│   │   └── tsp.py                 # Schémas Pydantic v2
+│   └── main.py                    # Point d'entrée FastAPI
+├── docker-compose.yml
+├── Dockerfile
+└── requirements.txt
+
+ocp-monitron-spark/
+├── src/
+│   ├── routes/
+│   │   ├── app.dashboard.tsx      # Dashboard temps réel
+│   │   ├── app.analyse.tsx        # Analyse qualité TSP
+│   │   ├── app.recommendations.tsx # Recommandations IA
+│   │   └── app.explain.tsx        # Explicabilité SHAP
+│   └── lib/
+│       └── mock-data.ts           # Données TSP OCP Khouribga
+```
+
+---
+
+## ⚙️ Variables d'environnement
+
+Créer un fichier `.env` dans le backend :
+
+```env
+MODEL_PATH=app/ml/models
+MODEL_VERSION=1.0.0
+P2O5_MIN=44.0
+P2O5_MAX=48.0
+OPTUNA_N_TRIALS=100
+OPTUNA_TIMEOUT=60
+```
+
+---
+
+## 🔧 Résolution des problèmes courants
+
+| Problème | Solution |
+|----------|----------|
+| `ModuleNotFoundError: No module named 'app'` | Lancer depuis le dossier racine du projet |
+| `uvicorn: command not found` | Utiliser `python -m uvicorn ...` |
+| `npm: command not found` | Installer Node.js depuis nodejs.org |
+| Port 8000 déjà utilisé | `python -m uvicorn app.main:app --port 8001` |
+| Erreur 422 sur temperature_sechage | Vérifier que `tsp.py` a `ge=300, le=650` |
+
+---
+
+## 👥 Profils utilisateurs
+
+| Profil | Accès | Vue principale |
+|--------|-------|----------------|
+| **Opérateur** | Dashboard + Alertes | Statut temps réel, messages simplifiés |
+| **Ingénieur Procédé** | Analyse + Optimisation | SHAP détaillé, paramètres Optuna |
+| **Management** | Dashboard + KPIs | Score qualité, taux conformité |
+
+---
+
+*Plateforme développée dans le cadre du PFE 2026 — OCP Group*
